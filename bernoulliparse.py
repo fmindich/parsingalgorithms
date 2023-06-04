@@ -518,6 +518,14 @@ class Bernoulli:
         # b = .5;
         
         D = DD #the vector that gets chopped as each segment is found
+
+
+
+        D = np.array(D)# ---------write in one line ---------------------------
+
+
+
+
         CP = np.array([[1, 0]], dtype=float) #initializing output; % value for p of 1st segment will to be filled in
 
 
@@ -525,7 +533,19 @@ class Bernoulli:
         while len(D)>9:
             n = len(D)
             nDkl = np.full((n, 1), np.nan)
-            N = np.atleast_2d(1, len(D)).T.conj() 
+
+
+
+
+            #N = np.atleast_2d(1, len(D)).T.conj()     # ------------------some sort of problem with array being treated as list (or vice versa)
+
+            N = np.arange(1, len(D)+1).reshape(-1, 1)
+
+
+
+
+
+
             cs = np.cumsum(D)
             pn = np.divide(cs, N)
 
@@ -534,7 +554,16 @@ class Bernoulli:
                     
                     # cost (in nats) of assuming that the subsequence up to k has 
                     # same p value as thesequence up to nn
-                    nDkl[k] = k/(1+k/nn)*self.getKLDivergenceProbability(pn(k),pn(nn)) # //// check ordering and content of arguments vs parameters
+
+
+
+
+                    #nDkl[k] = k/(1+k/nn)*self.getKLDivergenceProbability(bernoulli,pn(k),pn(nn)) # //// check ordering and content of arguments vs parameters
+                    # nDkl[k] = k/(1+k/nn)* ( pn(k) * np.log(pn(k)/pn(nn)) + (1-pn(k)) * np.log((1-pn(k))/(1-pn(nn))) )
+                    nDkl[k] = k/(1+k/nn) * ( pn[k] * np.log(pn[k]/pn[nn]) + (1-pn[k]) * np.log((1-pn[k])/(1-pn[nn])) )
+
+
+
                 # end of stepping through the subsequences up to nn
 
 
@@ -559,7 +588,7 @@ class Bernoulli:
                     CP[-1][2] = sum(D(1, cp))/cp 
                     CP = np.append(CP, [[CP[-1,0]+cp-1, 0]], axis=0)
 
-                D = DD(CP(end,1)+1:end)
+                D = DD[CP[-1,0]:]
 
         #
 
@@ -576,6 +605,26 @@ class Bernoulli:
         #plotSimulatedData(self,axSourceEstimate,trueP,estimateBarSuccess,estimateBarFail):
 
 
+crit = .3
+minrun = 10
+text = np.genfromtxt(r"C:\Users\jmind\Desktop\Testing Data\BernoulliData\Rg6 (1).txt", dtype='str', usecols=(0,)) #problem: need to split so no commas
+j = 0
+for x in text:
+    j = j + 1
+DD = np.empty([j], dtype=int)
+i = 0
+while i<len(text):
+    txt = list(text[i].split(","))
+    txt2 = int(txt[1])
+    DD[i] = int(txt2)
+    i = i + 1
+    print(DD[i-1])
+
+for x in DD:
+    print(x)
+DD = DD.astype('int')
+bernoulli = Bernoulli()
+data = Bernoulli.BernoulliParse(bernoulli, DD, crit, minrun, True)
 
 
 
